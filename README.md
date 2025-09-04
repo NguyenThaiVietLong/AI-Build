@@ -2,41 +2,183 @@
 
 A comprehensive personal management web application built with Flask that helps users track goals, manage finances, and build healthy habits.
 
-## Features
+## 📑 Table of Contents
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Core Features](#core-features)
+- [API Documentation](#api-documentation)
+- [Development](#development)
+- [Security](#security)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [Support & License](#support--license)
+- [Roadmap](#roadmap)
+
+## ✨ Features
 
 ### 🎯 Goal Management
-- Create and track personal goals with detailed descriptions
-- Set target dates and monitor progress
-- Break goals into milestones for better tracking
-- Visual progress indicators and completion statistics
+- SMART goal creation and tracking
+- Milestone system for better organization
+- Visual progress tracking
+- Status management (Active/Completed/Paused)
+- Due date monitoring
 
 ### 💰 Financial Tracking
-- Record income and expense transactions
-- Categorize transactions with custom categories
-- View spending summaries and analytics
-- Export transaction data to CSV
-- Real-time balance tracking
+- Income and expense recording
+- Custom category management
+- Real-time balance monitoring
+- Spending analytics
+- CSV data export
 
 ### ✅ Habit Building
-- Create daily, weekly, or monthly habits
-- Track completion with streak counters
-- Calendar view of habit completion
-- Completion rate analytics
-- Habit reminders and notifications
+- Daily/weekly/monthly habits
+- Streak tracking
+- Calendar visualization
+- Completion analytics
+- Quick check-in functionality
+- Maximum 20 active habits
 
 ### 📊 Dashboard
-- Overview of all modules with key metrics
-- Recent activity summaries
+- Key metrics overview
+- Recent activity feed
 - Progress visualizations
-- Quick action buttons
+- Quick actions
 
-## Tech Stack
+## 🛠 Tech Stack
+- **Backend**: Python Flask, SQLAlchemy ORM
+- **Database**: SQLite (configurable to PostgreSQL/MySQL)
+- **Frontend**: Jinja2, Modern CSS, JavaScript
+- **Security**: Flask-Login, Flask-WTF
 
-- **Backend**: Python Flask with SQLAlchemy ORM
-- **Database**: SQLite (easily configurable to PostgreSQL/MySQL)
-- **Frontend**: Jinja2 templates with modern CSS and JavaScript
-- **Authentication**: Flask-Login with session management\n- **Forms**: Flask-WTF for form validation
-- **Styling**: Custom CSS with responsive design
+## 🚀 Getting Started
 
-## Installation & Setup\n\n### Prerequisites\n- Python 3.8 or higher\n- pip (Python package installer)\n\n### Installation Steps\n\n1. **Clone the repository**:\n   ```bash\n   git clone <repository-url>\n   cd AI-App\n   ```\n\n2. **Create a virtual environment** (recommended):\n   ```bash\n   python -m venv venv\n   \n   # On Windows:\n   venv\\Scripts\\activate\n   \n   # On macOS/Linux:\n   source venv/bin/activate\n   ```\n\n3. **Install dependencies**:\n   ```bash\n   pip install -r requirements.txt\n   ```\n\n4. **Set up environment variables** (optional):\n   ```bash\n   # Create a .env file in the root directory\n   SECRET_KEY=your-secret-key-here\n   DATABASE_URL=sqlite:///self_focus.db\n   ```\n\n5. **Initialize the database and run the application**:\n   ```bash\n   python run.py\n   ```\n\n6. **Access the application**:\n   Open your web browser and go to `http://localhost:5000`\n\n## Demo Account\n\nThe application comes with pre-populated sample data for testing:\n\n- **Username**: `john_doe`\n- **Password**: `password123`\n\nOr create a new account using the registration form.\n\n## Project Structure\n\n```\nself_focus_app/\n├── app/\n│   ├── __init__.py              # Flask app factory\n│   ├── models.py                # Database models\n│   ├── forms.py                 # WTForms form classes\n│   ├── sample_data.py           # Sample data generation\n│   └── routes/\n│       ├── auth.py              # Authentication routes\n│       ├── main.py              # Dashboard and main routes\n│       ├── goals.py             # Goal management routes\n│       ├── transactions.py      # Financial transaction routes\n│       ├── habits.py            # Habit tracking routes\n│       └── api.py               # REST API endpoints\n├── templates/                   # Jinja2 HTML templates\n│   ├── base.html               # Base template\n│   ├── dashboard.html          # Dashboard page\n│   ├── auth/                   # Authentication templates\n│   ├── goals/                  # Goal management templates\n│   ├── transactions/           # Transaction templates\n│   └── habits/                 # Habit tracking templates\n├── static/                     # Static assets\n│   ├── css/style.css          # Main stylesheet\n│   └── js/app.js              # JavaScript functionality\n├── tests/                      # Unit tests (to be implemented)\n├── requirements.txt            # Python dependencies\n├── run.py                     # Application entry point\n└── README.md                  # This file\n```\n\n## Database Models\n\n### User\n- Unique username and email\n- Secure password hashing\n- Session management\n- Related goals, transactions, habits, and categories\n\n### Goal\n- Title, description, target date\n- Progress tracking (0-100%)\n- Status (Active, Completed, Paused)\n- Related milestones\n\n### Transaction\n- Amount, type (Income/Expense)\n- Category, description, date\n- User relationship\n\n### Habit\n- Name, description, frequency\n- Streak tracking (current and longest)\n- Completion rate analytics\n- Related habit logs\n\n### Category\n- Custom transaction categories\n- Color and icon customization\n- Spending analytics\n\n## API Endpoints\n\n### Goals\n- `GET /api/goals` - List user goals\n- `POST /api/goals` - Create new goal\n- `PUT /api/goals/<id>` - Update goal\n- `DELETE /api/goals/<id>` - Delete goal\n\n### Transactions\n- `GET /api/transactions` - List transactions (paginated)\n- `POST /api/transactions` - Create transaction\n- `GET /api/transactions/summary` - Financial summary\n\n### Habits\n- `GET /api/habits` - List user habits\n- `POST /api/habits` - Create new habit\n- `POST /api/habits/<id>/checkin` - Record habit completion\n\n### Categories\n- `GET /api/categories` - List user categories\n\n## Features in Detail\n\n### Goal Management\n- **SMART Goals**: Support for Specific, Measurable, Achievable, Relevant, Time-bound goals\n- **Milestone System**: Break large goals into smaller, manageable milestones\n- **Progress Tracking**: Visual progress bars and percentage completion\n- **Status Management**: Active, Completed, and Paused states\n- **Due Date Tracking**: Days remaining and overdue notifications\n\n### Financial Management\n- **Transaction Recording**: Easy income and expense entry\n- **Category System**: Customizable categories with colors and icons\n- **Balance Tracking**: Real-time balance calculations\n- **Spending Analytics**: Monthly summaries and category breakdowns\n- **Data Export**: CSV export for external analysis\n- **Validation**: Insufficient funds protection\n\n### Habit Tracking\n- **Flexible Frequency**: Daily, weekly, or monthly habits\n- **Streak Tracking**: Current and longest streak counters\n- **Calendar View**: Visual habit completion calendar\n- **Completion Analytics**: 30-day completion rates\n- **Quick Check-in**: One-click habit completion\n- **Habit Limits**: Maximum 20 active habits per user\n\n### Dashboard Analytics\n- **Key Metrics**: Goals, balance, habits overview\n- **Recent Activity**: Latest goals, transactions, and habits\n- **Progress Indicators**: Visual progress tracking\n- **Quick Actions**: Fast access to common tasks\n\n## Security Features\n\n- **Password Hashing**: Secure password storage using Werkzeug\n- **Session Management**: Flask-Login session handling\n- **CSRF Protection**: Flask-WTF CSRF tokens\n- **Input Validation**: Server-side and client-side validation\n- **User Isolation**: Data separation between users\n\n## Customization\n\n### Environment Variables\n```bash\nSECRET_KEY=your-secret-key          # Flask secret key\nDATABASE_URL=sqlite:///app.db       # Database connection string\nDEBUG=True                          # Debug mode (development only)\n```\n\n### Database Configuration\nTo use PostgreSQL or MySQL instead of SQLite:\n\n1. Install the appropriate database driver:\n   ```bash\n   # PostgreSQL\n   pip install psycopg2-binary\n   \n   # MySQL\n   pip install PyMySQL\n   ```\n\n2. Update the DATABASE_URL in your environment:\n   ```bash\n   # PostgreSQL\n   DATABASE_URL=postgresql://user:password@localhost/selfocus\n   \n   # MySQL\n   DATABASE_URL=mysql://user:password@localhost/selfocus\n   ```\n\n## Development\n\n### Running in Development Mode\n```bash\nexport FLASK_ENV=development  # Linux/macOS\nset FLASK_ENV=development     # Windows\npython run.py\n```\n\n### Database Migrations\nThe app automatically creates tables on first run. For manual database operations:\n\n```python\nfrom app import create_app, db\napp = create_app()\nwith app.app_context():\n    db.create_all()  # Create tables\n    db.drop_all()    # Drop tables (careful!)\n```\n\n### Adding Sample Data\nSample data is automatically created on first run. To manually populate:\n\n```python\nfrom app.sample_data import create_sample_data\nwith app.app_context():\n    create_sample_data()\n```\n\n## Testing\n\n### Manual Testing\n1. Register a new account or use demo credentials\n2. Test goal creation and milestone tracking\n3. Add various transaction types and categories\n4. Create habits and test check-in functionality\n5. Verify dashboard metrics and navigation\n\n### Unit Tests (Future Enhancement)\nThe `tests/` directory is prepared for unit tests covering:\n- Model functionality\n- Route responses\n- Form validation\n- API endpoints\n- Authentication flows\n\n## Deployment\n\n### Production Considerations\n1. **Environment Variables**: Set secure SECRET_KEY and proper DATABASE_URL\n2. **Database**: Use PostgreSQL or MySQL for production\n3. **Web Server**: Use Gunicorn with Nginx\n4. **HTTPS**: Enable SSL/TLS encryption\n5. **Logging**: Configure proper logging levels\n6. **Backups**: Implement regular database backups\n\n### Docker Deployment (Future Enhancement)\nA Dockerfile and docker-compose.yml could be added for containerized deployment.\n\n## Contributing\n\n1. Fork the repository\n2. Create a feature branch (`git checkout -b feature/new-feature`)\n3. Commit your changes (`git commit -am 'Add new feature'`)\n4. Push to the branch (`git push origin feature/new-feature`)\n5. Create a Pull Request\n\n## License\n\nThis project is open source and available under the [MIT License](LICENSE).\n\n## Support\n\nFor questions, issues, or contributions:\n- Open an issue on GitHub\n- Check the existing documentation\n- Review the sample data and demo account\n\n## Future Enhancements\n\n- [ ] Mobile responsive improvements\n- [ ] Push notifications for habit reminders\n- [ ] Data visualization charts\n- [ ] Goal templates and suggestions\n- [ ] Social features (sharing achievements)\n- [ ] Advanced analytics and reporting\n- [ ] Data import/export (JSON, CSV)\n- [ ] Multi-language support\n- [ ] Dark mode theme\n- [ ] API rate limiting\n- [ ] Unit and integration tests\n- [ ] Docker containerization\n- [ ] CI/CD pipeline setup\n\n---\n\n**Built with ❤️ for personal productivity and goal achievement**"
-}]
+### Prerequisites
+- Python 3.8+
+- pip package manager
+
+### Installation
+```bash
+# Clone repository
+git clone <repository-url>
+cd AI-App
+
+# Set up virtual environment
+python -m venv venv
+# Windows
+venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+echo SECRET_KEY=your-secret-key-here > .env
+echo DATABASE_URL=sqlite:///self_focus.db >> .env
+
+# Run application
+python run.py
+```
+
+### Demo Account
+- Username: `john_doe`
+- Password: `password123`
+
+## 📁 Project Structure
+```
+self_focus_app/
+├── app/
+│   ├── __init__.py          # Flask app factory
+│   ├── models.py            # Database models
+│   ├── forms.py             # Form classes
+│   └── routes/              # Route handlers
+├── templates/               # HTML templates
+├── static/                  # Assets
+├── tests/                   # Unit tests
+└── run.py                   # Entry point
+```
+
+## Core Features
+
+### Goal Management
+- **SMART Goals**: Support for Specific, Measurable, Achievable, Relevant, Time-bound goals
+- **Milestone System**: Break large goals into smaller, manageable milestones
+- **Progress Tracking**: Visual progress bars and percentage completion
+- **Status Management**: Active, Completed, and Paused states
+- **Due Date Tracking**: Days remaining and overdue notifications
+
+### Financial Management
+- **Transaction Recording**: Easy income and expense entry
+- **Category System**: Customizable categories with colors and icons
+- **Balance Tracking**: Real-time balance calculations
+- **Spending Analytics**: Monthly summaries and category breakdowns
+- **Data Export**: CSV export for external analysis
+- **Validation**: Insufficient funds protection
+
+### Habit Tracking
+- **Flexible Frequency**: Daily, weekly, or monthly habits
+- **Streak Tracking**: Current and longest streak counters
+- **Calendar View**: Visual habit completion calendar
+- **Completion Analytics**: 30-day completion rates
+- **Quick Check-in**: One-click habit completion
+- **Habit Limits**: Maximum 20 active habits per user
+
+### Dashboard Analytics
+- **Key Metrics**: Goals, balance, habits overview
+- **Recent Activity**: Latest goals, transactions, and habits
+- **Progress Indicators**: Visual progress tracking
+- **Quick Actions**: Fast access to common tasks
+
+## API Documentation
+
+### Goals
+- `GET /api/goals` - List user goals
+- `POST /api/goals` - Create new goal
+- `PUT /api/goals/<id>` - Update goal
+- `DELETE /api/goals/<id>` - Delete goal
+
+### Transactions
+- `GET /api/transactions` - List transactions (paginated)
+- `POST /api/transactions` - Create transaction
+- `GET /api/transactions/summary` - Financial summary
+
+### Habits
+- `GET /api/habits` - List user habits
+- `POST /api/habits` - Create new habit
+- `POST /api/habits/<id>/checkin` - Record habit completion
+
+### Categories
+- `GET /api/categories` - List user categories
+
+## 🔒 Security Features
+- Secure password hashing
+- Session management
+- CSRF protection
+- Input validation
+- User data isolation
+
+## 🔧 Development
+[Development section content]
+
+## 🚀 Deployment
+[Deployment section content]
+
+## 🤝 Contributing
+[Contributing guidelines]
+
+## 📄 License
+This project is licensed under the MIT License.
+
+## 💡 Future Enhancements
+- [ ] Mobile responsive design
+- [ ] Push notifications
+- [ ] Advanced analytics
+- [ ] Dark mode
+- [ ] Multi-language support
+- [ ] Docker support
+
+---
+
+**Built with ❤️ for personal productivity**
