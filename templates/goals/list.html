@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Goals - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">My Goals</h1>
+        <p class="text-gray-600">Track and achieve your personal objectives</p>
+    </div>
+    <a href="{{ url_for('goals.create_goal') }}" class="btn btn-primary">+ Create New Goal</a>
+</div>
+
+<!-- Filter Tabs -->
+<div class="card mb-4">
+    <div style="display: flex; border-bottom: 1px solid #e5e7eb;">
+        <a href="{{ url_for('goals.list_goals', status='all') }}" 
+           class="{% if status_filter == 'all' %}active-tab{% endif %} tab-link">All Goals</a>
+        <a href="{{ url_for('goals.list_goals', status='active') }}" 
+           class="{% if status_filter == 'active' %}active-tab{% endif %} tab-link">Active</a>
+        <a href="{{ url_for('goals.list_goals', status='completed') }}" 
+           class="{% if status_filter == 'completed' %}active-tab{% endif %} tab-link">Completed</a>
+        <a href="{{ url_for('goals.list_goals', status='paused') }}" 
+           class="{% if status_filter == 'paused' %}active-tab{% endif %} tab-link">Paused</a>
+    </div>
+</div>
+
+<!-- Goals List -->
+{% if goals %}
+    <div style="display: grid; gap: 1rem;">
+        {% for goal in goals %}
+        <div class="card">
+            <div class="d-flex justify-between align-center mb-3">
+                <div>
+                    <h3 class="text-lg font-bold mb-1">
+                        <a href="{{ url_for('goals.view_goal', id=goal.id) }}" class="text-primary">{{ goal.title }}</a>
+                    </h3>
+                    <span class="badge badge-{{ 'success' if goal.status.value == 'Completed' else 'info' if goal.status.value == 'Active' else 'warning' }}">
+                        {{ goal.status.value }}
+                    </span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('goals.edit_goal', id=goal.id) }}" class="btn btn-outline btn-sm">Edit</a>
+                    <a href="{{ url_for('goals.view_goal', id=goal.id) }}" class="btn btn-primary btn-sm">View</a>
+                </div>
+            </div>
+            
+            {% if goal.description %}
+            <p class="text-gray-600 mb-3">{{ goal.description }}</p>
+            {% endif %}
+            
+            <div class="progress mb-3">
+                <div class="progress-bar" style="width: {{ goal.progress_percentage }}%;"></div>
+            </div>
+            
+            <div class="d-flex justify-between text-sm text-gray-500">
+                <span>{{ goal.progress_percentage }}% complete</span>
+                {% if goal.target_date %}
+                    {% set days_remaining = goal.days_remaining() %}
+                    <span>
+                        {% if days_remaining is not none %}
+                            {% if days_remaining > 0 %}
+                                {{ days_remaining }} days remaining
+                            {% elif days_remaining == 0 %}
+                                Due today
+                            {% else %}
+                                {{ days_remaining|abs }} days overdue
+                            {% endif %}
+                        {% endif %}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 3rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.6;">🎯</div>
+        <h3 class="text-xl mb-2">No goals found</h3>
+        <p class="text-gray-600 mb-4">Start your journey by creating your first goal!</p>
+        <a href="{{ url_for('goals.create_goal') }}" class="btn btn-primary">Create Your First Goal</a>
+    </div>
+{% endif %}
+
+<style>
+.tab-link {
+    padding: 1rem 1.5rem;
+    color: #6b7280;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.tab-link:hover {
+    color: #2563eb;
+    background-color: #f9fafb;
+}
+
+.active-tab {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+    font-weight: 600;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Add Milestone - {{ goal.title }} - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Add Milestone</h1>
+        <p class="text-gray-600">Break down "{{ goal.title }}" into smaller steps</p>
+    </div>
+    <a href="{{ url_for('goals.view_goal', id=goal.id) }}" class="btn btn-outline">Back to Goal</a>
+</div>
+
+<div class="row">
+    <div class="col-8">
+        <div class="card">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.title.label(class="form-label") }}
+                    {{ form.title(class="form-control", placeholder="e.g., Complete Chapter 1-3") }}
+                    {% if form.title.errors %}
+                        {% for error in form.title.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control", rows="3", placeholder="Describe what needs to be accomplished...") }}
+                    {% if form.description.errors %}
+                        {% for error in form.description.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small class="text-gray-500">Optional: Add details about this milestone</small>
+                </div>
+
+                <div class="form-group">
+                    {{ form.target_date.label(class="form-label") }}
+                    {{ form.target_date(class="form-control") }}
+                    {% if form.target_date.errors %}
+                        {% for error in form.target_date.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small class="text-gray-500">
+                        Optional: Set a target date
+                        {% if goal.target_date %}
+                            (Goal deadline: {{ goal.target_date.strftime('%Y-%m-%d') }})
+                        {% endif %}
+                    </small>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">Add Milestone</button>
+                    <a href="{{ url_for('goals.view_goal', id=goal.id) }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <!-- Goal Context -->
+        <div class="card mb-4">
+            <h3 class="card-title">Goal: {{ goal.title }}</h3>
+            <div class="text-sm">
+                {% if goal.description %}
+                <div class="mb-3">
+                    <strong>Description:</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #6b7280;">{{ goal.description }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="mb-2">
+                    <strong>Current Progress:</strong> {{ goal.progress_percentage }}%
+                </div>
+                <div class="progress mb-3">
+                    <div class="progress-bar" style="width: {{ goal.progress_percentage }}%;"></div>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Existing Milestones:</strong> {{ goal.milestones|length }}
+                </div>
+                <div class="mb-2">
+                    <strong>Completed:</strong> {{ goal.milestones|selectattr('is_completed')|list|length }}
+                </div>
+                
+                {% if goal.target_date %}
+                <div class="mb-2">
+                    <strong>Goal Deadline:</strong> {{ goal.target_date.strftime('%B %d, %Y') }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Milestone Tips -->
+        <div class="card">
+            <h3 class="card-title">Milestone Tips</h3>
+            <ul style="padding-left: 1.5rem; color: #6b7280;">
+                <li class="mb-2">Make milestones specific and measurable</li>
+                <li class="mb-2">Break large tasks into smaller steps</li>
+                <li class="mb-2">Set realistic target dates</li>
+                <li class="mb-2">Focus on actionable outcomes</li>
+                <li class="mb-2">Celebrate when you complete each one</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const targetDateInput = document.querySelector('input[name="target_date"]');
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    targetDateInput.setAttribute('min', today);
+    
+    {% if goal.target_date %}
+    // Set maximum date to goal deadline
+    const goalDeadline = '{{ goal.target_date.strftime('%Y-%m-%d') }}';
+    targetDateInput.setAttribute('max', goalDeadline);
+    {% endif %}
+});
+</script>
+{% endblock %}

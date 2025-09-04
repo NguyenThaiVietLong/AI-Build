@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ goal.title }} - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Edit Goal</h1>
+        <p class="text-gray-600">Update your goal details</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('goals.view_goal', id=goal.id) }}" class="btn btn-outline">View Goal</a>
+        <a href="{{ url_for('goals.list_goals') }}" class="btn btn-outline">Back to Goals</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-8">
+        <div class="card">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.title.label(class="form-label") }}
+                    {{ form.title(class="form-control") }}
+                    {% if form.title.errors %}
+                        {% for error in form.title.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control", rows="4") }}
+                    {% if form.description.errors %}
+                        {% for error in form.description.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.target_date.label(class="form-label") }}
+                    {{ form.target_date(class="form-control") }}
+                    {% if form.target_date.errors %}
+                        {% for error in form.target_date.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small class="text-gray-500">Optional: Set or update target completion date</small>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">Update Goal</button>
+                    <a href="{{ url_for('goals.view_goal', id=goal.id) }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <!-- Current Goal Status -->
+        <div class="card mb-4">
+            <h3 class="card-title">Current Status</h3>
+            <div class="text-sm">
+                <div class="mb-2">
+                    <strong>Status:</strong> 
+                    <span class="badge badge-{{ 'success' if goal.status.value == 'Completed' else 'info' if goal.status.value == 'Active' else 'warning' }}">
+                        {{ goal.status.value }}
+                    </span>
+                </div>
+                <div class="mb-2">
+                    <strong>Progress:</strong> {{ goal.progress_percentage }}%
+                </div>
+                <div class="mb-2">
+                    <strong>Milestones:</strong> {{ goal.milestones|length }}
+                </div>
+                <div class="mb-2">
+                    <strong>Created:</strong> {{ goal.created_at.strftime('%Y-%m-%d') }}
+                </div>
+                {% if goal.target_date %}
+                    {% set days_remaining = goal.days_remaining() %}
+                    <div class="mb-2">
+                        <strong>Target Date:</strong> {{ goal.target_date.strftime('%Y-%m-%d') }}
+                        {% if days_remaining is not none %}
+                            <br>
+                            <small class="text-{{ 'danger' if days_remaining < 0 else 'warning' if days_remaining < 7 else 'success' }}">
+                                {% if days_remaining > 0 %}
+                                    {{ days_remaining }} days remaining
+                                {% elif days_remaining == 0 %}
+                                    Due today!
+                                {% else %}
+                                    {{ days_remaining|abs }} days overdue
+                                {% endif %}
+                            </small>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Progress Visualization -->
+        <div class="card">
+            <h3 class="card-title">Progress</h3>
+            <div style="padding: 1rem;">
+                <div class="progress mb-2" style="height: 1rem;">
+                    <div class="progress-bar" style="width: {{ goal.progress_percentage }}%;"></div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold">{{ goal.progress_percentage }}%</div>
+                    <div class="text-sm text-gray-600">
+                        {{ goal.milestones|selectattr('is_completed')|list|length }} of {{ goal.milestones|length }} milestones completed
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

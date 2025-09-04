@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Create Habit - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Create New Habit</h1>
+        <p class="text-gray-600">Start building a positive habit today</p>
+    </div>
+    <a href="{{ url_for('habits.list_habits') }}" class="btn btn-outline">Back to Habits</a>
+</div>
+
+<div class="row">
+    <div class="col-8">
+        <div class="card">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control", placeholder="e.g., Drink 8 glasses of water") }}
+                    {% if form.name.errors %}
+                        {% for error in form.name.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control", rows="3", placeholder="Describe what this habit means to you and why it's important...") }}
+                    {% if form.description.errors %}
+                        {% for error in form.description.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small class="text-gray-500">Optional: Add motivation and details about your habit</small>
+                </div>
+
+                <div class="form-group">
+                    {{ form.frequency.label(class="form-label") }}
+                    {{ form.frequency(class="form-control form-select") }}
+                    {% if form.frequency.errors %}
+                        {% for error in form.frequency.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            {{ form.time_unit.label(class="form-label") }}
+                            {{ form.time_unit(class="form-control form-select", id="time_unit") }}
+                            {% if form.time_unit.errors %}
+                                {% for error in form.time_unit.errors %}
+                                    <small style="color: #ef4444;">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                            <small class="text-gray-500">Select time unit for your habit</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            {{ form.time_value.label(class="form-label") }}
+                            {{ form.time_value(class="form-control", min="1", max="60", id="time_value") }}
+                            {% if form.time_value.errors %}
+                                {% for error in form.time_value.errors %}
+                                    <small style="color: #ef4444;">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                            <small class="text-gray-500" id="time_value_help">Enter number of minutes (1-60)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.reminder_time.label(class="form-label") }}
+                    {{ form.reminder_time(class="form-control") }}
+                    {% if form.reminder_time.errors %}
+                        {% for error in form.reminder_time.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small class="text-gray-500">Optional: Set a daily reminder time</small>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">Create Habit</button>
+                    <a href="{{ url_for('habits.list_habits') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <!-- Habit Building Tips -->
+        <div class="card mb-4">
+            <h3 class="card-title">Building Successful Habits</h3>
+            <ul style="padding-left: 1.5rem; color: #6b7280;">
+                <li class="mb-2">Start small and be specific</li>
+                <li class="mb-2">Stack habits with existing routines</li>
+                <li class="mb-2">Track your progress consistently</li>
+                <li class="mb-2">Celebrate small wins</li>
+                <li class="mb-2">Don't break the chain</li>
+                <li class="mb-2">Be patient with yourself</li>
+            </ul>
+        </div>
+
+        <!-- Example Habits -->
+        <div class="card">
+            <h3 class="card-title">Popular Habits</h3>
+            <div class="text-sm text-gray-600">
+                <div class="mb-3">
+                    <strong>Health & Fitness</strong><br>
+                    • Exercise for 30 minutes<br>
+                    • Take 10,000 steps<br>
+                    • Drink 8 glasses of water
+                </div>
+                <div class="mb-3">
+                    <strong>Personal Growth</strong><br>
+                    • Read for 20 minutes<br>
+                    • Meditate for 10 minutes<br>
+                    • Write in a journal
+                </div>
+                <div class="mb-3">
+                    <strong>Productivity</strong><br>
+                    • Wake up at 6 AM<br>
+                    • Review daily goals<br>
+                    • Practice gratitude
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const timeUnitSelect = document.querySelector('#time_unit');
+    const timeValueInput = document.querySelector('#time_value');
+    const timeValueHelp = document.querySelector('#time_value_help');
+    
+    function updateTimeValueConstraints() {
+        const timeUnit = timeUnitSelect.value;
+        if (timeUnit === 'Minute') {
+            timeValueInput.setAttribute('max', '60');
+            timeValueHelp.textContent = 'Enter number of minutes (1-60)';
+        } else if (timeUnit === 'Hour') {
+            timeValueInput.setAttribute('max', '12');
+            timeValueHelp.textContent = 'Enter number of hours (1-12)';
+        }
+    }
+    
+    timeUnitSelect.addEventListener('change', updateTimeValueConstraints);
+    updateTimeValueConstraints(); // Initial update
+});
+</script>
+{% endblock %}

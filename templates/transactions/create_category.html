@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Create Category - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Create New Category</h1>
+        <p class="text-gray-600">Add a custom category for your transactions</p>
+    </div>
+    <a href="{{ url_for('transactions.list_categories') }}" class="btn btn-outline">Back to Categories</a>
+</div>
+
+<div class="row">
+    <div class="col-6">
+        <div class="card">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control", placeholder="e.g., Coffee & Snacks") }}
+                    {% if form.name.errors %}
+                        {% for error in form.name.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.icon.label(class="form-label") }}
+                    {{ form.icon(class="form-control", placeholder="e.g., ☕") }}
+                    {% if form.icon.errors %}
+                        {% for error in form.icon.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small class="text-gray-500">Choose an emoji to represent this category</small>
+                </div>
+
+                <div class="form-group">
+                    {{ form.color.label(class="form-label") }}
+                    <div class="d-flex align-items-center gap-3">
+                        {{ form.color(class="form-control", type="color", style="width: 60px; height: 40px; padding: 0;") }}
+                        <span id="color-preview" class="text-sm text-gray-600">Color preview</span>
+                    </div>
+                    {% if form.color.errors %}
+                        {% for error in form.color.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">Create Category</button>
+                    <a href="{{ url_for('transactions.list_categories') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-6">
+        <!-- Category Preview -->
+        <div class="card">
+            <h3 class="card-title">Preview</h3>
+            <div style="padding: 2rem; text-align: center;">
+                <div id="preview-card" class="card" style="display: inline-block; padding: 1rem; min-width: 200px;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="font-size: 2rem;" id="preview-icon">📊</div>
+                        <div>
+                            <div class="font-bold" id="preview-name">Category Name</div>
+                        </div>
+                        <div id="preview-color" style="width: 20px; height: 20px; border-radius: 50%; background-color: #6B7280;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Common Icons -->
+        <div class="card">
+            <h3 class="card-title">Common Icons</h3>
+            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; text-align: center;">
+                <button type="button" onclick="selectIcon('🍕')" class="btn btn-outline btn-sm">🍕</button>
+                <button type="button" onclick="selectIcon('🚗')" class="btn btn-outline btn-sm">🚗</button>
+                <button type="button" onclick="selectIcon('🏠')" class="btn btn-outline btn-sm">🏠</button>
+                <button type="button" onclick="selectIcon('💊')" class="btn btn-outline btn-sm">💊</button>
+                <button type="button" onclick="selectIcon('🎬')" class="btn btn-outline btn-sm">🎬</button>
+                <button type="button" onclick="selectIcon('📚')" class="btn btn-outline btn-sm">📚</button>
+                <button type="button" onclick="selectIcon('👕')" class="btn btn-outline btn-sm">👕</button>
+                <button type="button" onclick="selectIcon('✈️')" class="btn btn-outline btn-sm">✈️</button>
+                <button type="button" onclick="selectIcon('💻')" class="btn btn-outline btn-sm">💻</button>
+                <button type="button" onclick="selectIcon('☕')" class="btn btn-outline btn-sm">☕</button>
+                <button type="button" onclick="selectIcon('🎮')" class="btn btn-outline btn-sm">🎮</button>
+                <button type="button" onclick="selectIcon('📱')" class="btn btn-outline btn-sm">📱</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nameInput = document.querySelector('input[name="name"]');
+    const iconInput = document.querySelector('input[name="icon"]');
+    const colorInput = document.querySelector('input[name="color"]');
+    
+    const previewName = document.getElementById('preview-name');
+    const previewIcon = document.getElementById('preview-icon');
+    const previewColor = document.getElementById('preview-color');
+    
+    function updatePreview() {
+        previewName.textContent = nameInput.value || 'Category Name';
+        previewIcon.textContent = iconInput.value || '📊';
+        previewColor.style.backgroundColor = colorInput.value || '#6B7280';
+    }
+    
+    nameInput.addEventListener('input', updatePreview);
+    iconInput.addEventListener('input', updatePreview);
+    colorInput.addEventListener('input', updatePreview);
+    
+    // Initial preview update
+    updatePreview();
+});
+
+function selectIcon(emoji) {
+    document.querySelector('input[name="icon"]').value = emoji;
+    document.getElementById('preview-icon').textContent = emoji;
+}
+</script>
+{% endblock %}

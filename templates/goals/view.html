@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}{{ goal.title }} - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">{{ goal.title }}</h1>
+        <p class="text-gray-600">
+            <span class="badge badge-{{ 'success' if goal.status.value == 'Completed' else 'info' if goal.status.value == 'Active' else 'warning' }}">
+                {{ goal.status.value }}
+            </span>
+            {% if goal.target_date %}
+                {% set days_remaining = goal.days_remaining() %}
+                {% if days_remaining is not none %}
+                    • 
+                    {% if days_remaining > 0 %}
+                        {{ days_remaining }} days remaining
+                    {% elif days_remaining == 0 %}
+                        Due today
+                    {% else %}
+                        {{ days_remaining|abs }} days overdue
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('goals.edit_goal', id=goal.id) }}" class="btn btn-outline">Edit Goal</a>
+        {% if goal.status.value == 'Active' %}
+            <button onclick="updateGoalStatus('{{ goal.id }}', 'Completed', this)" class="btn btn-success">Mark Complete</button>
+        {% elif goal.status.value == 'Completed' %}
+            <button onclick="updateGoalStatus('{{ goal.id }}', 'Active', this)" class="btn btn-primary">Reactivate</button>
+        {% endif %}
+        <a href="{{ url_for('goals.list_goals') }}" class="btn btn-outline">Back to Goals</a>
+    </div>
+</div>
+
+<!-- Progress Overview -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="card-title">Progress Overview</h3>
+    </div>
+    
+    <div style="padding: 1.5rem;">
+        <div class="d-flex justify-between align-center mb-3">
+            <span class="font-medium">Overall Progress</span>
+            <span class="font-bold text-xl">{{ goal.progress_percentage }}%</span>
+        </div>
+        
+        <div class="progress mb-3" style="height: 1rem;">
+            <div class="progress-bar" style="width: {{ goal.progress_percentage }}%;"></div>
+        </div>
+        
+        <div class="d-flex justify-between text-sm text-gray-600">
+            <span>{{ milestones|selectattr('is_completed')|list|length }} of {{ milestones|length }} milestones completed</span>
+            {% if goal.target_date %}
+                <span>Target: {{ goal.target_date.strftime('%B %d, %Y') }}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Goal Details -->
+    <div class="col-6">
+        <!-- Description -->
+        {% if goal.description %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Description</h3>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p style="margin: 0; line-height: 1.6;">{{ goal.description }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Goal Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Goal Information</h3>
+            </div>
+            <div style="padding: 0 1.5rem;">
+                <div style="padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                    <strong>Status</strong>
+                    <p style="margin: 0.5rem 0 0 0;">
+                        <span class="badge badge-{{ 'success' if goal.status.value == 'Completed' else 'info' if goal.status.value == 'Active' else 'warning' }}">
+                            {{ goal.status.value }}
+                        </span>
+                    </p>
+                </div>
+                
+                {% if goal.target_date %}
+                <div style="padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                    <strong>Target Date</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #6b7280;">{{ goal.target_date.strftime('%B %d, %Y') }}</p>
+                </div>
+                {% endif %}
+                
+                <div style="padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                    <strong>Created</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #6b7280;">{{ goal.created_at.strftime('%B %d, %Y') }}</p>
+                </div>
+                
+                <div style="padding: 1rem 0;">
+                    <strong>Last Updated</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #6b7280;">{{ goal.updated_at.strftime('%B %d, %Y at %H:%M') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Milestones -->
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-between align-center">
+                    <h3 class="card-title">Milestones</h3>
+                    <a href="{{ url_for('goals.create_milestone', goal_id=goal.id) }}" class="btn btn-primary btn-sm">+ Add Milestone</a>
+                </div>
+            </div>
+            
+            {% if milestones %}
+                <div style="max-height: 500px; overflow-y: auto;">
+                    {% for milestone in milestones %}
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb; {% if loop.last %}border-bottom: none;{% endif %}">
+                        <div class="d-flex justify-between align-center mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                {% if milestone.is_completed %}
+                                    <span style="color: #10b981; font-size: 1.2rem;">✓</span>
+                                {% else %}
+                                    <span style="color: #6b7280; font-size: 1.2rem;">○</span>
+                                {% endif %}
+                                <span class="font-medium {{ 'text-gray-500 line-through' if milestone.is_completed else '' }}">
+                                    {{ milestone.title }}
+                                </span>
+                            </div>
+                            {% if not milestone.is_completed %}
+                                <button onclick="completeMilestone('{{ milestone.id }}', this)" class="btn btn-success btn-sm">
+                                    Complete
+                                </button>
+                            {% endif %}
+                        </div>
+                        
+                        {% if milestone.description %}
+                        <p style="margin: 0.5rem 0 0.5rem 1.7rem; color: #6b7280; font-size: 0.875rem;">
+                            {{ milestone.description }}
+                        </p>
+                        {% endif %}
+                        
+                        <div style="margin-left: 1.7rem; font-size: 0.75rem; color: #9ca3af;">
+                            {% if milestone.target_date %}
+                                Target: {{ milestone.target_date.strftime('%m/%d/%Y') }}
+                            {% endif %}
+                            {% if milestone.is_completed and milestone.completed_at %}
+                                • Completed: {{ milestone.completed_at.strftime('%m/%d/%Y') }}
+                            {% endif %}
+                        </div>
+                        
+                        {% if not milestone.is_completed %}
+                        <div style="margin-left: 1.7rem; margin-top: 0.5rem;">
+                            <button onclick="deleteMilestone('{{ milestone.id }}', '{{ milestone.title }}', this)" class="btn btn-danger" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                Delete
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.6;">🎯</div>
+                    <p>No milestones yet</p>
+                    <p class="text-sm">Break your goal into smaller steps!</p>
+                    <a href="{{ url_for('goals.create_milestone', goal_id=goal.id) }}" class="btn btn-primary btn-sm mt-2">
+                        Add First Milestone
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Actions</h3>
+    </div>
+    <div style="padding: 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        {% if goal.status.value != 'Completed' %}
+            <button onclick="updateGoalStatus('{{ goal.id }}', 'Completed', this)" class="btn btn-success">
+                ✅ Mark as Completed
+            </button>
+        {% endif %}
+        
+        {% if goal.status.value == 'Active' %}
+            <button onclick="updateGoalStatus('{{ goal.id }}', 'Paused', this)" class="btn btn-warning">
+                ⏸️ Pause Goal
+            </button>
+        {% elif goal.status.value == 'Paused' %}
+            <button onclick="updateGoalStatus('{{ goal.id }}', 'Active', this)" class="btn btn-primary">
+                ▶️ Resume Goal
+            </button>
+        {% elif goal.status.value == 'Completed' %}
+            <button onclick="updateGoalStatus('{{ goal.id }}', 'Active', this)" class="btn btn-primary">
+                🔄 Reactivate Goal
+            </button>
+        {% endif %}
+        
+        <a href="{{ url_for('goals.edit_goal', id=goal.id) }}" class="btn btn-outline">
+            ✏️ Edit Details
+        </a>
+        
+        <button onclick="deleteGoal('{{ goal.id }}', '{{ goal.title }}', this)" class="btn btn-danger">
+            🗑️ Delete Goal
+        </button>
+    </div>
+</div>
+
+<script>
+async function updateGoalStatus(goalId, newStatus, button) {
+    try {
+        SelfFocus.setLoading(button, true);
+        
+        const response = await SelfFocus.apiCall(`/goals/${goalId}/status`, {
+            method: 'POST',
+            body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (response.success) {
+            SelfFocus.showAlert('success', response.message);
+            location.reload(); // Refresh to show updated status
+        } else {
+            throw new Error(response.message || 'Failed to update goal');
+        }
+    } catch (error) {
+        SelfFocus.showAlert('error', error.message || 'Failed to update goal status');
+    } finally {
+        SelfFocus.setLoading(button, false);
+    }
+}
+
+async function completeMilestone(milestoneId, button) {
+    try {
+        SelfFocus.setLoading(button, true);
+        
+        const response = await SelfFocus.apiCall(`/goals/milestones/${milestoneId}/complete`, {
+            method: 'POST'
+        });
+        
+        if (response.success) {
+            SelfFocus.showAlert('success', response.message);
+            location.reload(); // Refresh to show updated progress
+        } else {
+            throw new Error(response.message || 'Failed to complete milestone');
+        }
+    } catch (error) {
+        SelfFocus.showAlert('error', error.message || 'Failed to complete milestone');
+    } finally {
+        SelfFocus.setLoading(button, false);
+    }
+}
+
+async function deleteMilestone(milestoneId, milestoneName, button) {
+    if (!confirm(`Are you sure you want to delete the milestone "${milestoneName}"?`)) {
+        return;
+    }
+    
+    try {
+        SelfFocus.setLoading(button, true);
+        
+        const response = await SelfFocus.apiCall(`/goals/milestones/${milestoneId}/delete`, {
+            method: 'POST'
+        });
+        
+        if (response.success) {
+            SelfFocus.showAlert('success', response.message);
+            location.reload();
+        } else {
+            throw new Error(response.message || 'Failed to delete milestone');
+        }
+    } catch (error) {
+        SelfFocus.showAlert('error', error.message || 'Failed to delete milestone');
+    } finally {
+        SelfFocus.setLoading(button, false);
+    }
+}
+
+async function deleteGoal(goalId, goalTitle, button) {
+    if (!confirm(`Are you sure you want to delete "${goalTitle}"? This action cannot be undone and will remove all milestones.`)) {
+        return;
+    }
+    
+    try {
+        SelfFocus.setLoading(button, true);
+        
+        const response = await fetch(`/goals/${goalId}/delete`, {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            SelfFocus.showAlert('success', 'Goal deleted successfully!');
+            window.location.href = '{{ url_for("goals.list_goals") }}';
+        } else {
+            throw new Error('Failed to delete goal');
+        }
+    } catch (error) {
+        SelfFocus.showAlert('error', error.message || 'Failed to delete goal');
+    } finally {
+        SelfFocus.setLoading(button, false);
+    }
+}
+</script>
+{% endblock %}

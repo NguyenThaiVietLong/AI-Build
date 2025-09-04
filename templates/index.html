@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Focus Management App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .hero {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .features {
+            padding: 4rem 0;
+            background: white;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>🎯 Self-Focus</h1>
+            <p>Your comprehensive personal management platform</p>
+            <p>Track goals, manage finances, build habits, and achieve your dreams</p>
+            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-lg" style="background: white; color: #2563eb;">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-lg btn-outline" style="color: white; border-color: white;">Sign Up</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem; color: #111827;">Everything you need to succeed</h2>
+            <p style="text-align: center; color: #6b7280; font-size: 1.125rem;">Comprehensive tools to help you achieve your personal and financial goals</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: #111827;">Goal Management</h3>
+                    <p style="color: #6b7280;">Set, track, and achieve your goals with milestone tracking and progress visualization. Break down big dreams into actionable steps.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: #111827;">Financial Tracking</h3>
+                    <p style="color: #6b7280;">Record income and expenses, categorize transactions, and get insights into your spending patterns with beautiful charts.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: #111827;">Habit Building</h3>
+                    <p style="color: #6b7280;">Build positive habits with streak tracking, reminders, and completion analytics. Transform your daily routine for success.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section style="background: #f8fafc; padding: 3rem 0; text-align: center;">
+        <div class="container">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem; color: #111827;">Ready to transform your life?</h2>
+            <p style="color: #6b7280; margin-bottom: 2rem;">Join thousands of users who are already achieving their goals</p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Get Started Free</a>
+        </div>
+    </section>
+</body>
+</html>

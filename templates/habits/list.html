@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Habits - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">My Habits</h1>
+        <p class="text-gray-600">Build positive habits and track your progress</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('habits.create_habit') }}" class="btn btn-primary">+ Create Habit</a>
+        <a href="{{ url_for('habits.calendar_view') }}" class="btn btn-outline">Calendar View</a>
+    </div>
+</div>
+
+<!-- Filter Toggle -->
+<div class="card mb-4">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <span class="font-medium">Show:</span>
+        <a href="{{ url_for('habits.list_habits', active='true') }}" 
+           class="btn {{ 'btn-primary' if active_only else 'btn-outline' }} btn-sm">
+            Active Habits
+        </a>
+        <a href="{{ url_for('habits.list_habits', active='false') }}" 
+           class="btn {{ 'btn-outline' if active_only else 'btn-primary' }} btn-sm">
+            All Habits
+        </a>
+    </div>
+</div>
+
+<!-- Today's Progress -->
+{% if active_only %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="card-title">Today's Progress</h3>
+    </div>
+    <div style="padding: 1rem;">
+        {% set today_completed = habits|selectattr('completed_today')|list|length %}
+        {% set total_active = habits|length %}
+        <div class="d-flex justify-between align-center mb-2">
+            <span class="font-medium">Completed Today</span>
+            <span class="font-bold text-xl">{{ today_completed }} / {{ total_active }}</span>
+        </div>
+        <div class="progress mb-2">
+            {% set completion_percentage = (today_completed / total_active * 100) if total_active > 0 else 0 %}
+            <div class="progress-bar" style="width: {{ completion_percentage }}%;"></div>
+        </div>
+        <div class="text-sm text-gray-500">
+            {% if completion_percentage == 100 %}
+                🎉 All habits completed for today! Great job!
+            {% elif completion_percentage >= 75 %}
+                💪 Almost there! You're doing great!
+            {% elif completion_percentage >= 50 %}
+                👍 Good progress! Keep it up!
+            {% else %}
+                📝 You can do this! Start with one habit.
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Habits List -->
+{% if habits %}
+    <div style="display: grid; gap: 1rem;">
+        {% for habit in habits %}
+        <div class="card habit-card" data-habit-id="{{ habit.id }}">
+            <div class="d-flex justify-between align-center mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="habit-toggle btn btn-sm {{ 'btn-success' if habit.completed_today else 'btn-outline' }}" 
+                            onclick="toggleHabit('{{ habit.id }}', this)"
+                            {{ 'disabled' if not habit.is_active else '' }}>
+                        {{ '✓' if habit.completed_today else '○' }}
+                    </button>
+                    <div>
+                        <h3 class="text-lg font-bold mb-1">
+                            <a href="{{ url_for('habits.view_habit', id=habit.id) }}" class="text-primary">{{ habit.name }}</a>
+                        </h3>
+                        <div class="text-sm text-gray-600">
+                            {{ habit.frequency.value }}
+                            {% if not habit.is_active %}
+                                <span class="badge badge-secondary ml-2">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-center">
+                        <div class="text-lg font-bold">{{ habit.current_streak }}</div>
+                        <div class="text-xs text-gray-500">Current</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold">{{ habit.longest_streak }}</div>
+                        <div class="text-xs text-gray-500">Best</div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if habit.description %}
+            <p class="text-gray-600 mb-3">{{ habit.description }}</p>
+            {% endif %}
+            
+            <!-- Progress Bar -->
+            {% set completion_rate = habit.get_completion_rate() %}
+            <div class="mb-3">
+                <div class="d-flex justify-between text-sm text-gray-600 mb-1">
+                    <span>30-day completion rate</span>
+                    <span>{{ "%.0f"|format(completion_rate) }}%</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: {{ completion_rate }}%;"></div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="d-flex justify-between align-items-center">
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('habits.view_habit', id=habit.id) }}" class="btn btn-outline btn-sm">View Details</a>
+                    <a href="{{ url_for('habits.edit_habit', id=habit.id) }}" class="btn btn-outline btn-sm">Edit</a>
+                </div>
+                <div class="d-flex gap-2">
+                    <button onclick="toggleHabitStatus('{{ habit.id }}', {{ 'false' if habit.is_active else 'true' }}, this)" 
+                            class="btn btn-outline btn-sm">
+                        {{ 'Pause' if habit.is_active else 'Activate' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 3rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.6;">✅</div>
+        <h3 class="text-xl mb-2">No habits found</h3>
+        <p class="text-gray-600 mb-4">Start building positive habits to improve your life!</p>
+        <a href="{{ url_for('habits.create_habit') }}" class="btn btn-primary">Create Your First Habit</a>
+    </div>
+{% endif %}
+
+<script>
+async function toggleHabit(habitId, button) {
+    try {
+        SelfFocus.setLoading(button, true);
+        button.innerHTML = '<span class="spinner"></span>';
+        
+        const response = await SelfFocus.apiCall(`/habits/${habitId}/checkin`, {
+            method: 'POST',
+            body: JSON.stringify({
+                date: new Date().toISOString().split('T')[0]
+            })
+        });
+        
+        if (response.success) {
+            button.className = 'habit-toggle btn btn-sm btn-success';
+            button.innerHTML = '✓';
+            
+            // Update streak display
+            const habitCard = button.closest('.habit-card');
+            const currentStreakElement = habitCard.querySelector('.text-lg.font-bold');
+            if (currentStreakElement) {
+                currentStreakElement.textContent = response.current_streak;
+            }
+            
+            // Update today's progress if visible
+            updateTodayProgress();
+            
+            SelfFocus.showAlert('success', response.message);
+        } else {
+            throw new Error(response.message || 'Failed to update habit');
+        }
+    } catch (error) {
+        button.className = 'habit-toggle btn btn-sm btn-outline';
+        button.innerHTML = '○';
+        SelfFocus.showAlert('error', error.message || 'Failed to update habit');
+    } finally {
+        SelfFocus.setLoading(button, false);
+    }
+}
+
+async function toggleHabitStatus(habitId, activate, button) {
+    const action = activate ? 'activate' : 'pause';
+    if (!confirm(`Are you sure you want to ${action} this habit?`)) {
+        return;
+    }
+    
+    try {
+        SelfFocus.setLoading(button, true);
+        
+        const response = await fetch(`/habits/${habitId}/toggle`, {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            SelfFocus.showAlert('success', `Habit ${action}d successfully!`);
+            location.reload(); // Refresh to show updated status
+        } else {
+            throw new Error(`Failed to ${action} habit`);
+        }
+    } catch (error) {
+        SelfFocus.showAlert('error', error.message || `Failed to ${action} habit`);
+    } finally {
+        SelfFocus.setLoading(button, false);
+    }
+}
+
+function updateTodayProgress() {
+    // Update today's progress counter if on the page
+    const completedButtons = document.querySelectorAll('.habit-toggle.btn-success');
+    const totalButtons = document.querySelectorAll('.habit-toggle');
+    
+    const progressText = document.querySelector('.font-bold.text-xl');
+    if (progressText) {
+        progressText.textContent = `${completedButtons.length} / ${totalButtons.length}`;
+    }
+    
+    const progressBar = document.querySelector('.progress-bar');
+    if (progressBar && totalButtons.length > 0) {
+        const percentage = (completedButtons.length / totalButtons.length) * 100;
+        progressBar.style.width = `${percentage}%`;
+    }
+}
+</script>
+{% endblock %}

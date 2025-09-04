@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}{{ habit.name }} - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">{{ habit.name }}</h1>
+        <p class="text-gray-600">
+            {{ habit.frequency.value }} habit
+            {% if not habit.is_active %}
+                <span class="badge badge-secondary ml-2">Inactive</span>
+            {% endif %}
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('habits.edit_habit', id=habit.id) }}" class="btn btn-outline">Edit Habit</a>
+        <a href="{{ url_for('habits.list_habits') }}" class="btn btn-outline">Back to Habits</a>
+    </div>
+</div>
+
+<!-- Quick Check-in -->
+{% if habit.is_active and not completed_today %}
+<div class="card mb-4" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+    <div class="d-flex justify-between align-center">
+        <div>
+            <h3 style="margin: 0; color: white;">Ready for today?</h3>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Mark this habit as completed for today</p>
+        </div>
+        <button onclick="toggleHabit('{{ habit.id }}', this)" class="btn" style="background: white; color: #10b981;">
+            ✓ Complete Now
+        </button>
+    </div>
+</div>
+{% elif completed_today %}
+<div class="card mb-4" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white;">
+    <div class="d-flex justify-between align-center">
+        <div>
+            <h3 style="margin: 0; color: white;">Great job!</h3>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">You've completed this habit for today</p>
+        </div>
+        <div style="font-size: 2rem;">🎉</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Habit Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-value">{{ habit.current_streak }}</div>
+        <div class="stat-label">Current Streak</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-value">{{ habit.longest_streak }}</div>
+        <div class="stat-label">Best Streak</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value">{{ "%.0f"|format(completion_rate) }}%</div>
+        <div class="stat-label">30-Day Rate</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value">{{ recent_logs|length }}</div>
+        <div class="stat-label">Recent Logs</div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Habit Details -->
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Habit Details</h3>
+            </div>
+            
+            <div style="padding: 0 1.5rem;">
+                {% if habit.description %}
+                <div style="padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                    <strong>Description</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #6b7280;">{{ habit.description }}</p>
+                </div>
+                {% endif %}
+                
+                <div style="padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                    <strong>Frequency</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #6b7280;">{{ habit.frequency.value }}</p>
+                </div>
+                
+                <div style="padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                    <strong>Target Count</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #6b7280;">{{ habit.target_count }} time(s) per {{ habit.frequency.value.lower() }}</p>
+                </div>
+                
+                {% if habit.reminder_time %}
+                <div style="padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                    <strong>Reminder Time</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #6b7280;">{{ habit.reminder_time.strftime('%H:%M') }}</p>
+                </div>
+                {% endif %}
+                
+                <div style="padding: 1rem 0;">
+                    <strong>Created</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #6b7280;">{{ habit.created_at.strftime('%B %d, %Y') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Visualization -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Progress Overview</h3>
+            </div>
+            
+            <div style="padding: 1.5rem;">
+                <div class="mb-3">
+                    <div class="d-flex justify-between text-sm text-gray-600 mb-1">
+                        <span>30-day completion rate</span>
+                        <span>{{ "%.1f"|format(completion_rate) }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {{ completion_rate }}%;"></div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    {% if completion_rate >= 90 %}
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌟</div>
+                        <p class="text-success font-medium">Excellent consistency!</p>
+                    {% elif completion_rate >= 75 %}
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
+                        <p class="text-success font-medium">Great progress!</p>
+                    {% elif completion_rate >= 50 %}
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">👍</div>
+                        <p class="text-warning font-medium">Good start, keep going!</p>
+                    {% else %}
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌱</div>
+                        <p class="text-gray-600 font-medium">Every journey starts with one step!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Activity (Last 30 Days)</h3>
+            </div>
+            
+            {% if recent_logs %}
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% for log in recent_logs %}
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb; {% if loop.last %}border-bottom: none;{% endif %}">
+                        <div class="d-flex justify-between align-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="color: #10b981; font-size: 1.2rem;">✓</span>
+                                <span class="font-medium">{{ log.date_completed.strftime('%B %d, %Y') }}</span>
+                            </div>
+                            <span class="text-sm text-gray-500">
+                                {{ log.date_completed.strftime('%A') }}
+                            </span>
+                        </div>
+                        {% if log.notes %}
+                        <p style="margin: 0.5rem 0 0 1.7rem; color: #6b7280; font-size: 0.875rem;">
+                            {{ log.notes }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.6;">📝</div>
+                    <p>No activity logged yet</p>
+                    <p class="text-sm">Start tracking this habit to see your progress!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Actions</h3>
+            </div>
+            <div style="padding: 1rem; display: grid; gap: 0.5rem;">
+                {% if habit.is_active %}
+                    <button onclick="toggleHabitStatus('{{ habit.id }}', false, this)" class="btn btn-warning">
+                        ⏸️ Pause Habit
+                    </button>
+                {% else %}
+                    <button onclick="toggleHabitStatus('{{ habit.id }}', true, this)" class="btn btn-success">
+                        ▶️ Activate Habit
+                    </button>
+                {% endif %}
+                
+                <a href="{{ url_for('habits.edit_habit', id=habit.id) }}" class="btn btn-outline">
+                    ✏️ Edit Details
+                </a>
+                
+                <button onclick="deleteHabit('{{ habit.id }}', '{{ habit.name }}', this)" class="btn btn-danger">
+                    🗑️ Delete Habit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function toggleHabit(habitId, button) {
+    try {
+        SelfFocus.setLoading(button, true);
+        
+        const response = await SelfFocus.apiCall(`/habits/${habitId}/checkin`, {
+            method: 'POST',
+            body: JSON.stringify({
+                date: new Date().toISOString().split('T')[0]
+            })
+        });
+        
+        if (response.success) {
+            SelfFocus.showAlert('success', response.message);
+            location.reload(); // Refresh to show updated status
+        } else {
+            throw new Error(response.message || 'Failed to update habit');
+        }
+    } catch (error) {
+        SelfFocus.showAlert('error', error.message || 'Failed to update habit');
+    } finally {
+        SelfFocus.setLoading(button, false);
+    }
+}
+
+async function toggleHabitStatus(habitId, activate, button) {
+    const action = activate ? 'activate' : 'pause';
+    if (!confirm(`Are you sure you want to ${action} this habit?`)) {
+        return;
+    }
+    
+    try {
+        SelfFocus.setLoading(button, true);
+        
+        const response = await fetch(`/habits/${habitId}/toggle`, {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            SelfFocus.showAlert('success', `Habit ${action}d successfully!`);
+            location.reload();
+        } else {
+            throw new Error(`Failed to ${action} habit`);
+        }
+    } catch (error) {
+        SelfFocus.showAlert('error', error.message || `Failed to ${action} habit`);
+    } finally {
+        SelfFocus.setLoading(button, false);
+    }
+}
+
+async function deleteHabit(habitId, habitName, button) {
+    if (!confirm(`Are you sure you want to delete "${habitName}"? This action cannot be undone and will remove all tracking data.`)) {
+        return;
+    }
+    
+    try {
+        SelfFocus.setLoading(button, true);
+        
+        const response = await fetch(`/habits/${habitId}/delete`, {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            SelfFocus.showAlert('success', 'Habit deleted successfully!');
+            window.location.href = '{{ url_for("habits.list_habits") }}';
+        } else {
+            throw new Error('Failed to delete habit');
+        }
+    } catch (error) {
+        SelfFocus.showAlert('error', error.message || 'Failed to delete habit');
+    } finally {
+        SelfFocus.setLoading(button, false);
+    }
+}
+</script>
+{% endblock %}

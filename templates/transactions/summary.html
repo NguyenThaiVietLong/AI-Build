@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Summary - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Financial Summary</h1>
+        <p class="text-gray-600">Overview of your financial activity</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('transactions.create_transaction') }}" class="btn btn-primary">+ Add Transaction</a>
+        <a href="{{ url_for('transactions.export_transactions') }}" class="btn btn-outline">Export CSV</a>
+    </div>
+</div>
+
+<!-- Current Balance and Monthly Overview -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="color: {{ '#10b981' if current_user.get_balance() >= 0 else '#ef4444' }};">💰</div>
+        <div class="stat-value" style="color: {{ '#10b981' if current_user.get_balance() >= 0 else '#ef4444' }};">
+            ${{ "%.2f"|format(current_user.get_balance()) }}
+        </div>
+        <div class="stat-label">Current Balance</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="color: #10b981;">📈</div>
+        <div class="stat-value" style="color: #10b981;">
+            {% set monthly_income = monthly_data|selectattr('1', 'equalto', 'Income')|map(attribute='2')|sum %}
+            ${{ "%.2f"|format(monthly_income) }}
+        </div>
+        <div class="stat-label">This Month's Income</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="color: #ef4444;">📉</div>
+        <div class="stat-value" style="color: #ef4444;">
+            {% set monthly_expenses = monthly_data|selectattr('1', 'equalto', 'Expense')|map(attribute='2')|sum %}
+            ${{ "%.2f"|format(monthly_expenses) }}
+        </div>
+        <div class="stat-label">This Month's Expenses</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="color: {{ '#10b981' if (monthly_income - monthly_expenses) >= 0 else '#ef4444' }};">💵</div>
+        <div class="stat-value" style="color: {{ '#10b981' if (monthly_income - monthly_expenses) >= 0 else '#ef4444' }};">
+            ${{ "%.2f"|format(monthly_income - monthly_expenses) }}
+        </div>
+        <div class="stat-label">Monthly Net</div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Monthly Breakdown Chart -->
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ current_year }} Monthly Breakdown</h3>
+            </div>
+            
+            <div style="padding: 1rem;">
+                {% if monthly_data %}
+                    {% set months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] %}
+                    
+                    {% for month_num in range(1, 13) %}
+                        {% set month_name = months[month_num - 1] %}
+                        {% set month_income = monthly_data|selectattr('0', 'equalto', month_num)|selectattr('1', 'equalto', 'Income')|map(attribute='2')|sum %}
+                        {% set month_expenses = monthly_data|selectattr('0', 'equalto', month_num)|selectattr('1', 'equalto', 'Expense')|map(attribute='2')|sum %}
+                        
+                        {% if month_income > 0 or month_expenses > 0 %}
+                        <div style="margin-bottom: 1rem;">
+                            <div class="d-flex justify-between align-center mb-1">
+                                <span class="font-medium">{{ month_name }}</span>
+                                <span style="color: {{ '#10b981' if (month_income - month_expenses) >= 0 else '#ef4444' }};">
+                                    ${{ "%.2f"|format(month_income - month_expenses) }}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-between text-sm text-gray-500 mb-2">
+                                <span style="color: #10b981;">+${{ "%.2f"|format(month_income) }}</span>
+                                <span style="color: #ef4444;">-${{ "%.2f"|format(month_expenses) }}</span>
+                            </div>
+                            <div class="progress progress-sm">
+                                {% set total = month_income + month_expenses %}
+                                {% if total > 0 %}
+                                    <div style="width: {{ (month_income / total * 100)|round(1) }}%; background-color: #10b981; height: 100%; border-radius: inherit;"></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                        <p>No transaction data available for {{ current_year }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Spending by Category (Last 30 Days)</h3>
+            </div>
+            
+            <div style="padding: 1rem;">
+                {% if category_data %}
+                    {% set total_spending = category_data|map(attribute='2')|sum %}
+                    
+                    {% for category in category_data %}
+                    <div style="margin-bottom: 1rem;">
+                        <div class="d-flex justify-between align-center mb-2">
+                            <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span>{{ category[1] or '📊' }}</span>
+                                <span class="font-medium">{{ category[0] }}</span>
+                            </span>
+                            <span class="font-medium" style="color: #ef4444;">
+                                ${{ "%.2f"|format(category[2]) }}
+                            </span>
+                        </div>
+                        <div class="progress progress-sm mb-1">
+                            {% set percentage = (category[2] / total_spending * 100) if total_spending > 0 else 0 %}
+                            <div class="progress-bar" style="width: {{ percentage|round(1) }}%; background-color: {{ category[1] or '#6B7280' }};"></div>
+                        </div>
+                        <div class="text-sm text-gray-500 text-right">
+                            {{ "%.1f"|format(percentage) }}% of total spending
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+                        <div class="d-flex justify-between font-medium">
+                            <span>Total Spending</span>
+                            <span style="color: #ef4444;">${{ "%.2f"|format(total_spending) }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                        <p>No expense data available for the last 30 days</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Quick Actions</h3>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; padding: 1rem;">
+        <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline" style="padding: 1rem; text-align: center;">
+            📋 View All Transactions
+        </a>
+        <a href="{{ url_for('transactions.list_categories') }}" class="btn btn-outline" style="padding: 1rem; text-align: center;">
+            🏷️ Manage Categories
+        </a>
+        <a href="{{ url_for('transactions.export_transactions') }}" class="btn btn-outline" style="padding: 1rem; text-align: center;">
+            📊 Export Data
+        </a>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline" style="padding: 1rem; text-align: center;">
+            🏠 Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

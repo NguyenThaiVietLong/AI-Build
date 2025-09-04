@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Add Transaction - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Add Transaction</h1>
+        <p class="text-gray-600">Record a new income or expense</p>
+    </div>
+    <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">Back to Transactions</a>
+</div>
+
+<div class="row">
+    <div class="col-8">
+        <div class="card">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.type.label(class="form-label") }}
+                    {{ form.type(class="form-control form-select", id="transaction-type") }}
+                    {% if form.type.errors %}
+                        {% for error in form.type.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.amount.label(class="form-label") }}
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #6b7280;">$</span>
+                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" 
+                               style="padding-left: 2rem;" placeholder="0.00" value="{{ form.amount.data or '' }}" required>
+                    </div>
+                    {% if form.amount.errors %}
+                        {% for error in form.amount.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.category_id.label(class="form-label") }}
+                    {{ form.category_id(class="form-control form-select") }}
+                    {% if form.category_id.errors %}
+                        {% for error in form.category_id.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small class="text-gray-500">
+                        <a href="{{ url_for('transactions.list_categories') }}">Manage categories</a>
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control", placeholder="e.g., Grocery shopping, Salary payment") }}
+                    {% if form.description.errors %}
+                        {% for error in form.description.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.transaction_date.label(class="form-label") }}
+                    {{ form.transaction_date(class="form-control") }}
+                    {% if form.transaction_date.errors %}
+                        {% for error in form.transaction_date.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.receipt_url.label(class="form-label") }}
+                    {{ form.receipt_url(class="form-control", placeholder="https://example.com/receipt.jpg") }}
+                    {% if form.receipt_url.errors %}
+                        {% for error in form.receipt_url.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small class="text-gray-500">Optional: Link to receipt or proof</small>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">Add Transaction</button>
+                    <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <!-- Current Balance -->
+        <div class="card mb-4">
+            <h3 class="card-title">Current Balance</h3>
+            <div style="text-align: center; padding: 1.5rem;">
+                <div style="font-size: 1.8rem; font-weight: bold; color: {{ '#10b981' if current_user.get_balance() >= 0 else '#ef4444' }};">
+                    ${{ "%.2f"|format(current_user.get_balance()) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Tips -->
+        <div class="card">
+            <h3 class="card-title">Tips for Better Tracking</h3>
+            <ul style="padding-left: 1.5rem; color: #6b7280;">
+                <li class="mb-2">Add transactions as soon as possible</li>
+                <li class="mb-2">Use descriptive names for easy identification</li>
+                <li class="mb-2">Choose appropriate categories</li>
+                <li class="mb-2">Keep receipts for important purchases</li>
+                <li class="mb-2">Review your spending regularly</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('transaction-type');
+    const amountInput = document.getElementById('amount');
+    
+    // Update placeholder and styling based on transaction type
+    function updateTransactionType() {
+        const isIncome = typeSelect.value === 'Income';
+        amountInput.style.borderColor = isIncome ? '#10b981' : '#ef4444';
+        amountInput.placeholder = isIncome ? 'Enter income amount' : 'Enter expense amount';
+    }
+    
+    typeSelect.addEventListener('change', updateTransactionType);
+    updateTransactionType(); // Initial call
+});
+</script>
+{% endblock %}

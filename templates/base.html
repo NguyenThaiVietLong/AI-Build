@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Self-Focus Management App{% endblock %}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>"
+    />
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    {% if current_user.is_authenticated %}
+    <!-- Header -->
+    <header class="header">
+      <div class="container">
+        <div class="logo">🎯 Self-Focus</div>
+        <nav>
+          <ul class="nav">
+            <li>
+              <a
+                href="{{ url_for('main.dashboard') }}"
+                class="{% if request.endpoint == 'main.dashboard' %}active{% endif %}"
+                >Dashboard</a
+              >
+            </li>
+            <li>
+              <a
+                href="{{ url_for('goals.list_goals') }}"
+                class="{% if request.blueprint == 'goals' %}active{% endif %}"
+                >Goals</a
+              >
+            </li>
+            <li>
+              <a
+                href="{{ url_for('transactions.list_transactions') }}"
+                class="{% if request.blueprint == 'transactions' %}active{% endif %}"
+                >Finances</a
+              >
+            </li>
+            <li>
+              <a
+                href="{{ url_for('habits.list_habits') }}"
+                class="{% if request.blueprint == 'habits' %}active{% endif %}"
+                >Habits</a
+              >
+            </li>
+          </ul>
+        </nav>
+        <div class="user-menu">
+          <span>Welcome, {{ current_user.username }}!</span>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm"
+            >Logout</a
+          >
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <ul>
+        <li>
+          <a
+            href="{{ url_for('main.dashboard') }}"
+            class="{% if request.endpoint == 'main.dashboard' %}active{% endif %}"
+          >
+            <span class="icon">📊</span> Dashboard
+          </a>
+        </li>
+
+        <!-- Goals Section -->
+        <li>
+          <a
+            href="{{ url_for('goals.list_goals') }}"
+            class="{% if request.blueprint == 'goals' and request.endpoint != 'goals.create_goal' %}active{% endif %}"
+          >
+            <span class="icon">🎯</span> Goals
+          </a>
+        </li>
+        <li>
+          <a
+            href="{{ url_for('goals.create_goal') }}"
+            class="{% if request.endpoint == 'goals.create_goal' %}active{% endif %}"
+          >
+            <span class="icon">➕</span> New Goal
+          </a>
+        </li>
+
+        <!-- Transactions Section -->
+        <li>
+          <a
+            href="{{ url_for('transactions.list_transactions') }}"
+            class="{% if request.blueprint == 'transactions' and request.endpoint not in ['transactions.create_transaction', 'transactions.summary'] %}active{% endif %}"
+          >
+            <span class="icon">💰</span> Transactions
+          </a>
+        </li>
+        <li>
+          <a
+            href="{{ url_for('transactions.create_transaction') }}"
+            class="{% if request.endpoint == 'transactions.create_transaction' %}active{% endif %}"
+          >
+            <span class="icon">💸</span> Add Transaction
+          </a>
+        </li>
+        <li>
+          <a
+            href="{{ url_for('transactions.summary') }}"
+            class="{% if request.endpoint == 'transactions.summary' %}active{% endif %}"
+          >
+            <span class="icon">📈</span> Financial Summary
+          </a>
+        </li>
+
+        <!-- Habits Section -->
+        <li>
+          <a
+            href="{{ url_for('habits.list_habits') }}"
+            class="{% if request.blueprint == 'habits' and request.endpoint not in ['habits.create_habit', 'habits.calendar_view'] %}active{% endif %}"
+          >
+            <span class="icon">✅</span> Habits
+          </a>
+        </li>
+        <li>
+          <a
+            href="{{ url_for('habits.create_habit') }}"
+            class="{% if request.endpoint == 'habits.create_habit' %}active{% endif %}"
+          >
+            <span class="icon">🔄</span> New Habit
+          </a>
+        </li>
+        <li>
+          <a
+            href="{{ url_for('habits.calendar_view') }}"
+            class="{% if request.endpoint == 'habits.calendar_view' %}active{% endif %}"
+          >
+            <span class="icon">📅</span> Habit Calendar
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div
+        class="alert alert-{{ 'error' if category == 'error' else category }}"
+      >
+        {{ message }}
+      </div>
+      {% endfor %} {% endif %} {% endwith %} {% block content %}{% endblock %}
+    </main>
+    {% else %}
+    <!-- Simple layout for auth pages -->
+    {% block auth_content %}{% endblock %} {% endif %}
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

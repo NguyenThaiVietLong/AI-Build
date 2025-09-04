@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Create Goal - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Create New Goal</h1>
+        <p class="text-gray-600">Set a new objective and track your progress</p>
+    </div>
+    <a href="{{ url_for('goals.list_goals') }}" class="btn btn-outline">Back to Goals</a>
+</div>
+
+<div class="row">
+    <div class="col-8">
+        <div class="card">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.title.label(class="form-label") }}
+                    {{ form.title(class="form-control", placeholder="e.g., Learn Python Programming") }}
+                    {% if form.title.errors %}
+                        {% for error in form.title.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control", rows="4", placeholder="Describe your goal in detail...") }}
+                    {% if form.description.errors %}
+                        {% for error in form.description.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.target_date.label(class="form-label") }}
+                    {{ form.target_date(class="form-control") }}
+                    {% if form.target_date.errors %}
+                        {% for error in form.target_date.errors %}
+                            <small style="color: #ef4444;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small class="text-gray-500">Optional: Set a target completion date</small>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">Create Goal</button>
+                    <a href="{{ url_for('goals.list_goals') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="card">
+            <h3 class="card-title">Tips for Effective Goals</h3>
+            <ul style="padding-left: 1.5rem; color: #6b7280;">
+                <li class="mb-2">Make it specific and measurable</li>
+                <li class="mb-2">Set a realistic timeline</li>
+                <li class="mb-2">Break it into smaller milestones</li>
+                <li class="mb-2">Write down why it matters to you</li>
+                <li class="mb-2">Review and adjust regularly</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h3 class="card-title">Examples</h3>
+            <div class="text-sm text-gray-600">
+                <div class="mb-3">
+                    <strong>Learn a New Language</strong><br>
+                    Achieve conversational fluency in Spanish within 6 months
+                </div>
+                <div class="mb-3">
+                    <strong>Fitness Goal</strong><br>
+                    Run a 5K race without stopping in 3 months
+                </div>
+                <div class="mb-3">
+                    <strong>Career Development</strong><br>
+                    Get promoted to senior position within 1 year
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

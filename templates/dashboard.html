@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Dashboard</h1>
+        <p class="text-gray-600">Welcome back, {{ current_user.username }}! Here's your progress overview.</p>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+        <a href="{{ url_for('goals.create_goal') }}" class="btn btn-primary">+ New Goal</a>
+        <a href="{{ url_for('transactions.create_transaction') }}" class="btn btn-success">+ Add Transaction</a>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-value">{{ active_goals }}</div>
+        <div class="stat-label">Active Goals</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value">${{ "%.2f"|format(current_balance) }}</div>
+        <div class="stat-label">Current Balance</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value">{{ today_completed_habits }}/{{ active_habits }}</div>
+        <div class="stat-label">Today's Habits</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-value">${{ "%.0f"|format(monthly_income - monthly_expenses) }}</div>
+        <div class="stat-label">Monthly Net</div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Goals -->
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Goals</h3>
+                <a href="{{ url_for('goals.list_goals') }}" class="btn btn-outline btn-sm">View All</a>
+            </div>
+            
+            {% if recent_goals %}
+                {% for goal in recent_goals %}
+                <div style="padding: 1rem; border-bottom: 1px solid #e5e7eb; {% if loop.last %}border-bottom: none;{% endif %}">
+                    <div class="d-flex justify-between align-center mb-2">
+                        <h4 style="margin: 0; color: #111827;">{{ goal.title }}</h4>
+                        <span class="badge badge-{{ 'success' if goal.status.value == 'Completed' else 'info' }}">
+                            {{ goal.status.value }}
+                        </span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" style="width: {{ goal.progress_percentage }}%;"></div>
+                    </div>
+                    <div class="d-flex justify-between text-sm text-gray-500">
+                        <span>{{ goal.progress_percentage }}% complete</span>
+                        {% if goal.days_remaining() %}
+                            <span>{{ goal.days_remaining() }} days remaining</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                    <p>No goals yet. <a href="{{ url_for('goals.create_goal') }}" class="text-primary">Create your first goal!</a></p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Financial Summary</h3>
+                <a href="{{ url_for('transactions.summary') }}" class="btn btn-outline btn-sm">View Details</a>
+            </div>
+            
+            <div style="padding: 0 1.5rem;">
+                <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                    <span style="color: #6b7280;">Monthly Income</span>
+                    <span style="color: #10b981; font-weight: 600;">+${{ "%.2f"|format(monthly_income) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                    <span style="color: #6b7280;">Monthly Expenses</span>
+                    <span style="color: #ef4444; font-weight: 600;">-${{ "%.2f"|format(monthly_expenses) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 1rem 0;">
+                    <span style="font-weight: 600;">Net Income</span>
+                    <span style="color: {{ '#10b981' if (monthly_income - monthly_expenses) >= 0 else '#ef4444' }}; font-weight: 600;">
+                        {{ "+" if (monthly_income - monthly_expenses) >= 0 else "" }}${{ "%.2f"|format(monthly_income - monthly_expenses) }}
+                    </span>
+                </div>
+            </div>
+
+            {% if recent_transactions %}
+                <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                    <h4 style="margin: 0 0 1rem 1.5rem; color: #374151; font-size: 1rem;">Recent Transactions</h4>
+                    {% for transaction in recent_transactions[:3] %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1.5rem;">
+                        <div>
+                            <div style="font-weight: 500;">{{ transaction.category.icon }} {{ transaction.category.name }}</div>
+                            <div style="font-size: 0.875rem; color: #6b7280;">{{ transaction.transaction_date.strftime('%b %d') }}</div>
+                        </div>
+                        <div style="color: {{ '#10b981' if transaction.type.value == 'Income' else '#ef4444' }}; font-weight: 600;">
+                            {{ '+' if transaction.type.value == 'Income' else '-' }}${{ "%.2f"|format(transaction.amount) }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Habits Today -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Today's Habits</h3>
+        <a href="{{ url_for('habits.list_habits') }}" class="btn btn-outline btn-sm">View All Habits</a>
+    </div>
+    
+    {% if user_habits %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; padding: 0 1.5rem 1.5rem;">
+            {% for habit in user_habits[:6] %}
+            <div class="habit-card" data-habit-id="{{ habit.id }}" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+                <div class="d-flex justify-between align-center mb-2">
+                    <h4 style="margin: 0;">{{ habit.name }}</h4>
+                    {% set completed_today = habit.habit_logs|selectattr('date_completed', 'equalto', today)|list %}
+                    <button class="habit-toggle btn btn-sm {{ 'btn-success' if completed_today else 'btn-outline' }}" 
+                            onclick="toggleHabit('{{ habit.id }}', this)">
+                        {{ '✓' if completed_today else '○' }}
+                    </button>
+                </div>
+                <div class="text-sm text-gray-500 mb-2">
+                    Current streak: {{ habit.current_streak }} days
+                </div>
+                <div class="progress progress-sm">
+                    {% set completion_rate = habit.get_completion_rate() %}
+                    <div class="progress-bar" style="width: {{ completion_rate }}%;"></div>
+                </div>
+                <div class="text-sm text-gray-500 mt-1">
+                    {{ "%.0f"|format(completion_rate) }}% completion rate (30 days)
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <p>No habits yet. <a href="{{ url_for('habits.create_habit') }}" class="text-primary">Create your first habit!</a></p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+async function toggleHabit(habitId, button) {
+    try {
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner"></span>';
+        
+        const response = await fetch(`/habits/${habitId}/checkin`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                date: new Date().toISOString().split('T')[0]
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            button.className = 'habit-toggle btn btn-sm btn-success';
+            button.innerHTML = '✓';
+            
+            // Update streak display
+            const habitCard = button.closest('.habit-card');
+            const streakText = habitCard.querySelector('.text-sm');
+            streakText.textContent = `Current streak: ${data.current_streak} days`;
+            
+            // Show success message
+            showAlert('success', data.message);
+        } else {
+            button.className = 'habit-toggle btn btn-sm btn-outline';
+            button.innerHTML = '○';
+            showAlert('error', data.message);
+        }
+    } catch (error) {
+        showAlert('error', 'Failed to update habit');
+        button.className = 'habit-toggle btn btn-sm btn-outline';
+        button.innerHTML = '○';
+    } finally {
+        button.disabled = false;
+    }
+}
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.textContent = message;
+    
+    const container = document.querySelector('.main-content');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    setTimeout(() => alertDiv.remove(), 5000);
+}
+</script>
+{% endblock %}

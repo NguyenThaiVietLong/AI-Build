@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block auth_content %}
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 2rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="font-size: 2rem; color: #111827; margin-bottom: 0.5rem;">🎯 Self-Focus</h1>
+            <p style="color: #6b7280;">Welcome back! Please sign in to your account.</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'error' if category == 'error' else category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" id="loginForm">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control", placeholder="Enter your Email") }}
+                {% if form.email.errors %}
+                    {% for error in form.email.errors %}
+                        <small style="color: #ef4444;">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", placeholder="Enter your password") }}
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <small style="color: #ef4444;">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                Sign In
+            </button>
+        </form>
+
+        <div style="text-align: center; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; margin-bottom: 1rem;">Don't have an account?</p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline" style="width: 100%;">Create Account</a>
+        </div>
+
+        <!-- Demo Credentials -->
+        <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;">
+            <p style="color: #6b7280; font-size: 0.875rem; text-align: center; margin-bottom: 0.5rem;"><strong>Demo Credentials:</strong></p>
+            <p style="color: #6b7280; font-size: 0.875rem; text-align: center; margin: 0;">
+                Username: <code>john_doe</code><br>
+                Password: <code>password123</code>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

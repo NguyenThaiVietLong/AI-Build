@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Categories - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Transaction Categories</h1>
+        <p class="text-gray-600">Organize your transactions with custom categories</p>
+    </div>
+    <a href="{{ url_for('transactions.create_category') }}" class="btn btn-primary">+ Create Category</a>
+</div>
+
+{% if categories %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+        {% for category in categories %}
+        <div class="card">
+            <div class="d-flex justify-between align-center mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="font-size: 2rem;">{{ category.icon }}</div>
+                    <div>
+                        <h3 class="text-lg font-bold" style="margin: 0;">{{ category.name }}</h3>
+                        {% if category.is_default %}
+                            <span class="badge badge-info">Default</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background-color: {{ category.color }};"></div>
+            </div>
+            
+            <div class="text-sm text-gray-600 mb-3">
+                {% set category_total = category.get_total_amount() %}
+                <div class="d-flex justify-between">
+                    <span>Total transactions:</span>
+                    <span>${{ "%.2f"|format(category_total) }}</span>
+                </div>
+                <div class="d-flex justify-between">
+                    <span>Transaction count:</span>
+                    <span>{{ category.transactions|length }}</span>
+                </div>
+            </div>
+            
+            {% if not category.is_default %}
+            <div class="d-flex gap-2">
+                <button onclick="deleteCategory('{{ category.id }}', '{{ category.name }}', this)" class="btn btn-danger btn-sm">
+                    Delete
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 3rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.6;">🏷️</div>
+        <h3 class="text-xl mb-2">No categories found</h3>
+        <p class="text-gray-600 mb-4">Create your first category to organize your transactions!</p>
+        <a href="{{ url_for('transactions.create_category') }}" class="btn btn-primary">Create Your First Category</a>
+    </div>
+{% endif %}
+
+<script>
+async function deleteCategory(categoryId, categoryName, button) {
+    if (!confirm(`Are you sure you want to delete the "${categoryName}" category? This action cannot be undone.`)) {
+        return;
+    }
+    
+    try {
+        SelfFocus.setLoading(button, true);
+        
+        const response = await fetch(`/transactions/categories/${categoryId}/delete`, {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            SelfFocus.showAlert('success', 'Category deleted successfully');
+            location.reload(); // Refresh the page
+        } else {
+            throw new Error('Failed to delete category');
+        }
+    } catch (error) {
+        SelfFocus.showAlert('error', error.message || 'Failed to delete category');
+    } finally {
+        SelfFocus.setLoading(button, false);
+    }
+}
+</script>
+{% endblock %}

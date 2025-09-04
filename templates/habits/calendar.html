@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Habit Calendar - Self-Focus{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-between align-center mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Habit Calendar</h1>
+        <p class="text-gray-600">Visual overview of your habit completion</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('habits.create_habit') }}" class="btn btn-primary">+ New Habit</a>
+        <a href="{{ url_for('habits.list_habits') }}" class="btn btn-outline">Back to Habits</a>
+    </div>
+</div>
+
+<!-- Active Habits Summary -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="card-title">Active Habits ({{ habits|length }})</h3>
+    </div>
+    
+    {% if habits %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; padding: 1rem;">
+            {% for habit in habits %}
+            <div class="d-flex align-items-center gap-3 p-2" style="border: 1px solid #e5e7eb; border-radius: 0.5rem;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background-color: {{ loop.cycle('#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899') }};"></div>
+                <div>
+                    <div class="font-medium">{{ habit.name }}</div>
+                    <div class="text-sm text-gray-500">{{ habit.frequency.value }} • {{ habit.current_streak }} day streak</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <p>No active habits to display</p>
+            <a href="{{ url_for('habits.create_habit') }}" class="btn btn-primary mt-2">Create Your First Habit</a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Calendar Grid -->
+{% if habits %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">90-Day Calendar View</h3>
+        <div class="d-flex align-items-center gap-3 text-sm">
+            <div class="d-flex align-items-center gap-1">
+                <div style="width: 12px; height: 12px; border-radius: 2px; background-color: #10b981;"></div>
+                <span>Completed</span>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+                <div style="width: 12px; height: 12px; border-radius: 2px; background-color: #e5e7eb;"></div>
+                <span>Not completed</span>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+                <div style="width: 12px; height: 12px; border-radius: 2px; background-color: #f3f4f6; border: 1px solid #d1d5db;"></div>
+                <span>Today</span>
+            </div>
+        </div>
+    </div>
+    
+    <div style="padding: 1rem; overflow-x: auto;">
+        <div style="display: grid; grid-template-columns: 200px repeat(90, 20px); gap: 2px; min-width: 2000px;">
+            <!-- Header Row (Dates) -->
+            <div></div> <!-- Empty cell for habit names column -->
+            {% for i in range(90) %}
+                {% set date_obj = (date.today() - timedelta(days=89-i)) %}
+                <div style="text-align: center; font-size: 0.7rem; color: #6b7280; writing-mode: vertical-rl;">
+                    {{ date_obj.strftime('%m/%d') }}
+                </div>
+            {% endfor %}
+            
+            <!-- Habit Rows -->
+            {% for habit in habits %}
+            <div style="padding: 0.25rem; font-size: 0.875rem; font-weight: 500; border-right: 1px solid #e5e7eb;">
+                {{ habit.name[:25] }}{{ '...' if habit.name|length > 25 else '' }}
+            </div>
+            
+            {% for i in range(90) %}
+                {% set check_date = (date.today() - timedelta(days=89-i)) %}
+                {% set date_str = check_date.strftime('%Y-%m-%d') %}
+                {% set is_today = check_date == date.today() %}
+                {% set is_completed = calendar_data.get(date_str, [])|selectattr('habit_id', 'equalto', habit.id)|list|length > 0 %}
+                
+                <div style="width: 18px; height: 18px; border-radius: 2px; 
+                           background-color: {% if is_completed %}#10b981{% elif is_today %}#f3f4f6{% else %}#e5e7eb{% endif %};
+                           {% if is_today %}border: 1px solid #d1d5db;{% endif %}
+                           position: relative;"
+                     title="{{ habit.name }} - {{ check_date.strftime('%B %d, %Y') }} - {{ 'Completed' if is_completed else 'Not completed' }}">
+                </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Summary -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Monthly Completion Summary</h3>
+    </div>
+    
+    <div style="padding: 1rem;">
+        <div class="row">
+            {% set months_data = {} %}
+            {% for date_str, logs in calendar_data.items() %}
+                {% set month_key = date_str[:7] %} {# YYYY-MM #}
+                {% if month_key not in months_data %}
+                    {% set _ = months_data.update({month_key: 0}) %}
+                {% endif %}
+                {% set _ = months_data.update({month_key: months_data[month_key] + logs|length}) %}
+            {% endfor %}
+            
+            {% for month_key in months_data.keys()|sort|reverse %}
+                {% set month_date = datetime.strptime(month_key + '-01', '%Y-%m-%d') %}
+                {% set total_completions = months_data[month_key] %}
+                {% set days_in_month = (month_date.replace(month=month_date.month+1) - month_date).days if month_date.month < 12 else (month_date.replace(year=month_date.year+1, month=1) - month_date).days %}
+                {% set max_possible = habits|length * days_in_month %}
+                {% set completion_rate = (total_completions / max_possible * 100) if max_possible > 0 else 0 %}
+                
+                <div class="col-4 mb-3">
+                    <div class="card">
+                        <div style="padding: 1rem;">
+                            <h4 style="margin: 0 0 0.5rem 0;">{{ month_date.strftime('%B %Y') }}</h4>
+                            <div class="text-2xl font-bold mb-2">{{ "%.0f"|format(completion_rate) }}%</div>
+                            <div class="progress mb-2">
+                                <div class="progress-bar" style="width: {{ completion_rate }}%;"></div>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                {{ total_completions }} / {{ max_possible }} completions
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add tooltips for calendar squares
+    const calendarSquares = document.querySelectorAll('[title]');
+    calendarSquares.forEach(square => {
+        square.addEventListener('mouseenter', function(e) {
+            // Could implement custom tooltip here
+        });
+    });
+});
+</script>
+
+<style>
+/* Make calendar scrollable on mobile */
+@media (max-width: 768px) {
+    .card {
+        overflow-x: auto;
+    }
+}
+</style>
+{% endblock %}
