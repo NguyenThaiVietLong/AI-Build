@@ -2,16 +2,6 @@
 
 A comprehensive personal management web application built with Flask that helps users track goals, manage finances, and build healthy habits.
 
-## 📑 Table of Contents
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Core Features](#core-features)
-- [API Documentation](#api-documentation)
-- [Security](#security)
-- [Future Enhancements](#future-enhancements)
-
 ## ✨ Features
 
 ### 🎯 Goal Management
@@ -82,20 +72,6 @@ python run.py
 - Username: `john_doe`
 - Password: `password123`
 
-## 📁 Project Structure
-```
-self_focus_app/
-├── app/
-│   ├── __init__.py          # Flask app factory
-│   ├── models.py            # Database models
-│   ├── forms.py             # Form classes
-│   └── routes/              # Route handlers
-├── templates/               # HTML templates
-├── static/                  # Assets
-├── tests/                   # Unit tests
-└── run.py                   # Entry point
-```
-
 ## Core Features
 
 ### Goal Management
@@ -148,7 +124,7 @@ self_focus_app/
 ### Categories
 - `GET /api/categories` - List user categories
 
-### 🔒 Security Features
+## 🔒 Security Features
 - Secure password hashing
 - Session management
 - CSRF protection
