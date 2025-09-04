@@ -10,7 +10,7 @@ A comprehensive personal management web application built with Flask that helps 
 - [Core Features](#core-features)
 - [API Documentation](#api-documentation)
 - [Security](#security)
-- [Roadmap](#roadmap)
+- [Future Enhancements](#future-enhancements)
 
 ## ✨ Features
 
@@ -148,16 +148,13 @@ self_focus_app/
 ### Categories
 - `GET /api/categories` - List user categories
 
-## 🔒 Security Features
+### 🔒 Security Features
 - Secure password hashing
 - Session management
 - CSRF protection
 - Input validation
 - User data isolation
 
-
-## 📄 License
-This project is licensed under the MIT License.
 
 ## 💡 Future Enhancements
 - [ ] Mobile responsive design
