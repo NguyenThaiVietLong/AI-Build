@@ -9,11 +9,7 @@ A comprehensive personal management web application built with Flask that helps 
 - [Project Structure](#project-structure)
 - [Core Features](#core-features)
 - [API Documentation](#api-documentation)
-- [Development](#development)
 - [Security](#security)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
-- [Support & License](#support--license)
 - [Roadmap](#roadmap)
 
 ## ✨ Features
@@ -159,14 +155,6 @@ self_focus_app/
 - Input validation
 - User data isolation
 
-## 🔧 Development
-[Development section content]
-
-## 🚀 Deployment
-[Deployment section content]
-
-## 🤝 Contributing
-[Contributing guidelines]
 
 ## 📄 License
 This project is licensed under the MIT License.
